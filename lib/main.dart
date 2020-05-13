@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hackernews/model/Article.dart';
 import 'package:hackernews/repository/ArticleRepository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(MyApp());
 
@@ -28,15 +29,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<List<Article>> articles;
-  
+  Stream<Article> articles;
+  final _articles = List<Article>();
+
   @override
   void initState() {
     super.initState();
-    
+
     articles = getArticles();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,32 +48,30 @@ class _MyHomePageState extends State<MyHomePage> {
       body: _buildArticleListView(context),
     );
   }
-  
+
   Widget _buildArticleListView(BuildContext context) {
-  
-    return FutureBuilder<List<Article>>(
-      future: articles,
+    return StreamBuilder<Article>(
+      stream: articles,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.done) {
           return Column(
             children: <Widget>[
-              Expanded (
+              Expanded(
                 child: ListView.separated(
                   itemBuilder: (context, index) {
-                    final article = snapshot.data[index];
-                    return ListTile (
-                      title: Text(
-                        '${article.title}'
-                      ),
-                      subtitle: Text(
-                        '${article.by}'
-                      ),
-                    );
+                    final article = _articles[index + 1];
+                    return _buildListItem(article);
+//                      ListTile(
+////                      key: Key(index.toString()),
+//                      title: Text('${article.title}'),
+//                      subtitle: Text('${article.by}'),
+//                    );
                   },
-                  separatorBuilder: (BuildContext context, int index) => Divider(
+                  separatorBuilder: (BuildContext context, int index) =>
+                      Divider(
                     height: 1,
                   ),
-                  itemCount: snapshot.data.length,
+                  itemCount: 15,
                 ),
               ),
             ],
@@ -79,14 +79,44 @@ class _MyHomePageState extends State<MyHomePage> {
         } else if (snapshot.hasError) {
           return Center(child: Text("${snapshot.error}"));
         }
-      
+
+        _articles.add(snapshot.data);
         // By default, show a loading spinner.
-        return Column(
-          children: <Widget>[
-            Expanded(child: Center(child: Text("Loading..."))),
-          ],
-        );//CircularProgressIndicator());
+        return Center(
+            child: CircularProgressIndicator()); //CircularProgressIndicator());
       },
+    );
+  }
+
+  Widget _buildListItem(Article article) {
+    return Padding(
+      key: Key(article.title.toString()),
+      padding: const EdgeInsets.all(8.0),
+      child: ExpansionTile(
+        title: ListTile(
+          title: Text(
+            '${article.title}',
+            style: TextStyle(fontSize: 20),
+          ),
+          subtitle: Text('${article.by}'),
+        ),
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Text('Type: ${article.type}'),
+              IconButton(
+                icon: Icon(Icons.launch),
+                onPressed: () async {
+                  if(await canLaunch(article.url)) {
+                    launch(article.url);
+                  }
+                },
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }
