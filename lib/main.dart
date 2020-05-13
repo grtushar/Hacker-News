@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hackernews/model/Article.dart';
+import 'package:hackernews/repository/ArticleRepository.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,26 +28,65 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Future<List<Article>> articles;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    articles = getArticles();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: _buildArticleListView(context),
+    );
+  }
+  
+  Widget _buildArticleListView(BuildContext context) {
+  
+    return FutureBuilder<List<Article>>(
+      future: articles,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Column(
+            children: <Widget>[
+              Expanded (
+                child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    final article = snapshot.data[index];
+                    return ListTile (
+                      title: Text(
+                        '${article.title}'
+                      ),
+                      subtitle: Text(
+                        '${article.by}'
+                      ),
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) => Divider(
+                    height: 1,
+                  ),
+                  itemCount: snapshot.data.length,
+                ),
+              ),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Center(child: Text("${snapshot.error}"));
+        }
+      
+        // By default, show a loading spinner.
+        return Column(
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              'Hello',
-              style: Theme.of(context).textTheme.display1,
-            ),
+            Expanded(child: Center(child: Text("Loading..."))),
           ],
-        ),
-      ),
+        );//CircularProgressIndicator());
+      },
     );
   }
 }
