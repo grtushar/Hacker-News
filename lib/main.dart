@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 child: ListView.separated(
                   itemBuilder: (context, index) {
-                    final article = _articles[index + 1];
+                    final article = _articles[index];
                     return _buildListItem(article);
 //                      ListTile(
 ////                      key: Key(index.toString()),
@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Divider(
                     height: 1,
                   ),
-                  itemCount: 15,
+                  itemCount: _articles.length,
                 ),
               ),
             ],
@@ -80,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return Center(child: Text("${snapshot.error}"));
         }
 
-        _articles.add(snapshot.data);
+        if(snapshot.data != null) _articles.add(snapshot.data);
         // By default, show a loading spinner.
         return Center(
             child: CircularProgressIndicator()); //CircularProgressIndicator());
