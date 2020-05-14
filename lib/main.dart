@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
             '${article.title}',
             style: TextStyle(fontSize: 20),
           ),
-          subtitle: Text('${article.by}'),
+          subtitle: Text('By ${article.by}'),
         ),
         children: <Widget>[
           Row(
