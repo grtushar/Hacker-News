@@ -12,6 +12,7 @@ class Article extends Equatable {
 	final int score;
 	final int time;
 	final String title;
+	/// "job", "story", "comment", "poll", "pollopt"
 	final String type;
 	final String url;
 	
