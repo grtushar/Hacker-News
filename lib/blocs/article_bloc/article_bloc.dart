@@ -37,8 +37,6 @@ class ArticleBloc extends Bloc<ArticleEvent, ArticleState> {
   }
   
   Stream<ArticleState> _mapRefreshArticlesToState(RefreshArticles event) async* {
-    yield ArticlesLoading();
-    
     try {
       final List<Article> articles = await articleRepository.getArticles();
       yield ArticlesLoaded(articles);

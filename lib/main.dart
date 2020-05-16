@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hackernews/blocs/article_bloc/bloc.dart';
@@ -47,11 +49,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Stream<Article> articles;
-
+  Completer<void> _refreshCompleter;
+  
   @override
   void initState() {
     super.initState();
+    _refreshCompleter = Completer<void>();
     BlocProvider.of<ArticleBloc>(context)
       .add(FetchArticles());
   }
@@ -69,6 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildArticleListView(BuildContext context) {
     return BlocConsumer<ArticleBloc, ArticleState> (
       listener: (BuildContext context, ArticleState state) {
+        if(state is ArticlesLoaded) {
+          _refreshCompleter?.complete();
+          _refreshCompleter = Completer();
+        }
       },
       builder: (BuildContext context, ArticleState state) {
         if(state is ArticlesLoading) {
@@ -76,28 +83,37 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         if(state is ArticlesLoaded) {
           final articles = state.articles;
-          return Column(
-            children: <Widget>[
-              Expanded(
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    final article = articles[index];
-                    return _buildListItem(article);
-                  },
-                  separatorBuilder: (BuildContext context, int index) =>
-                    Divider(
-                      height: 1,
-                    ),
-                  itemCount: articles.length,
+          return RefreshIndicator(
+            onRefresh: () {
+              BlocProvider.of<ArticleBloc>(context)
+                .add(RefreshArticles());
+              return _refreshCompleter.future;
+            },
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      final article = articles[index];
+                      return _buildListItem(article);
+                    },
+                    separatorBuilder: (BuildContext context, int index) =>
+                      Divider(
+                        height: 1,
+                      ),
+                    itemCount: articles.length,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         }
         if (state is ArticlesError) {
-          return Text(
-            'Something went wrong!',
-            style: TextStyle(color: Colors.red),
+          return Center(
+            child: Text(
+              'Something went wrong!',
+              style: TextStyle(fontSize: 16, color: Colors.red),
+            ),
           );
         }
         return Center(child: CircularProgressIndicator());
