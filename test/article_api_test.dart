@@ -1,15 +1,13 @@
-import 'package:hackernews/network/HackerNewsApi.dart';
+import 'package:hackernews/network/ArticleApiClient.dart';
 import 'package:test/test.dart';
 
 void main() {
 	test("Fetching article ids", () async {
-		int firstArticleId = (await fetchArticles()).first;
-//		await fetchArticles().then((values) {
-//			firstArticleId = values.first;
-//		});
+		final ArticleApiClient articleApiClient = ArticleApiClient();
+		int firstArticleId = (await articleApiClient.fetchArticles()).first;
 		expect(firstArticleId, isNotNull);
 		
-		String firstArticleAuthor = (await fetchArticle(firstArticleId)).by;
+		String firstArticleAuthor = (await articleApiClient.fetchArticle(firstArticleId)).by;
 		expect(firstArticleAuthor, isNotNull);
 	});
 }
