@@ -1,7 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:hackernews/model/Article.dart';
-import 'package:hackernews/network/HackerNewsApi.dart';
+import 'package:hackernews/network/ArticleApiClient.dart';
 
-Stream<Article> getArticles() async* {
+class ArticleRepository {
+	final ArticleApiClient articleApiClient;
+
+  ArticleRepository({@required this.articleApiClient})
+    : assert(articleApiClient != null);
+	
+	Future<List<Article>> getArticles() async {
+		final ids = await articleApiClient.fetchArticles();
+		return Future.wait(ids.sublist(0, 14).map((id) => articleApiClient.fetchArticle(id)));
+		
 //	final articles = List<Article>();
 //	fetchArticles().then((articleIds) {
 ////		for(int articleId in articleIds) {
@@ -13,8 +23,9 @@ Stream<Article> getArticles() async* {
 //			});
 //		}
 //	});
-	final ids = await fetchArticles();
-	for(int i = 0; i < 16; i++) {
-		yield await fetchArticle(ids[i]);
+
+//		for(int i = 0; i < 16; i++) {
+//			yield await articleApiClient.fetchArticle(ids[i]);
+//		}
 	}
 }

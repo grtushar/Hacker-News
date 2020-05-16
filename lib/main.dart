@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hackernews/blocs/article_bloc/bloc.dart';
 import 'package:hackernews/model/Article.dart';
 import 'package:hackernews/repository/ArticleRepository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void main() => runApp(MyApp());
+import 'package:hackernews/network/ArticleApiClient.dart';
+
+void main() {
+  final ArticleRepository articleRepository = ArticleRepository(
+    articleApiClient: ArticleApiClient()
+  );
+  runApp(
+    MultiBlocProvider (
+      providers: [
+        BlocProvider<ArticleBloc>(
+          create: (context) => ArticleBloc(articleRepository),
+        )
+      ],
+      child: MyApp(),
+    )
+  );
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -30,13 +48,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Stream<Article> articles;
-  final _articles = List<Article>();
 
   @override
   void initState() {
     super.initState();
-
-    articles = getArticles();
+    BlocProvider.of<ArticleBloc>(context)
+      .add(FetchArticles());
   }
 
   @override
@@ -50,40 +67,40 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildArticleListView(BuildContext context) {
-    return StreamBuilder<Article>(
-      stream: articles,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
+    return BlocConsumer<ArticleBloc, ArticleState> (
+      listener: (BuildContext context, ArticleState state) {
+      },
+      builder: (BuildContext context, ArticleState state) {
+        if(state is ArticlesLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if(state is ArticlesLoaded) {
+          final articles = state.articles;
           return Column(
             children: <Widget>[
               Expanded(
                 child: ListView.separated(
                   itemBuilder: (context, index) {
-                    final article = _articles[index];
+                    final article = articles[index];
                     return _buildListItem(article);
-//                      ListTile(
-////                      key: Key(index.toString()),
-//                      title: Text('${article.title}'),
-//                      subtitle: Text('${article.by}'),
-//                    );
                   },
                   separatorBuilder: (BuildContext context, int index) =>
-                      Divider(
-                    height: 1,
-                  ),
-                  itemCount: _articles.length,
+                    Divider(
+                      height: 1,
+                    ),
+                  itemCount: articles.length,
                 ),
               ),
             ],
           );
-        } else if (snapshot.hasError) {
-          return Center(child: Text("${snapshot.error}"));
         }
-
-        if(snapshot.data != null) _articles.add(snapshot.data);
-        // By default, show a loading spinner.
-        return Center(
-            child: CircularProgressIndicator()); //CircularProgressIndicator());
+        if (state is ArticlesError) {
+          return Text(
+            'Something went wrong!',
+            style: TextStyle(color: Colors.red),
+          );
+        }
+        return Center(child: CircularProgressIndicator());
       },
     );
   }
