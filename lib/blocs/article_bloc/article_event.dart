@@ -5,6 +5,12 @@ abstract class ArticleEvent extends Equatable {
 }
 
 class FetchArticles extends ArticleEvent {
+  final int _type;
+  
+  int get type => _type;
+  
+  FetchArticles(this._type);
+  
   @override
   // TODO: implement props
   List<Object> get props => null;
@@ -16,6 +22,12 @@ class FetchArticles extends ArticleEvent {
 }
 
 class RefreshArticles extends ArticleEvent {
+  final int _type;
+  
+  int get type => _type;
+
+  RefreshArticles(this._type);
+  
   @override
   // TODO: implement props
   List<Object> get props => null;

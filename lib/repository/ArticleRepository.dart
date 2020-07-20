@@ -8,8 +8,8 @@ class ArticleRepository {
   ArticleRepository({@required this.articleApiClient})
     : assert(articleApiClient != null);
 	
-	Future<List<Article>> getArticles() async {
-		final ids = await articleApiClient.fetchArticles();
+	Future<List<Article>> getArticles(int type) async {
+		final ids = await articleApiClient.fetchArticles(type);
 		return Future.wait(ids.sublist(0, 14).map((id) => articleApiClient.fetchArticle(id)));
 		
 //	final articles = List<Article>();

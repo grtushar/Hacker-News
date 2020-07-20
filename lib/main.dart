@@ -31,9 +31,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+//      theme: ThemeData.dark(),
+//        primarySwatch: Colors.blue,
+//      ),
       home: MyHomePage(title: 'Hacker News Articles'),
     );
   }
@@ -50,13 +50,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Completer<void> _refreshCompleter;
+  int _selectedIndex = 0;
   
   @override
   void initState() {
     super.initState();
     _refreshCompleter = Completer<void>();
     BlocProvider.of<ArticleBloc>(context)
-      .add(FetchArticles());
+      .add(FetchArticles(_selectedIndex));
+  }
+
+  void _onItemTapped(int value) {
+    setState(() {
+      _selectedIndex = value;
+    });
   }
 
   @override
@@ -65,11 +72,29 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: _buildArticleListView(context),
+      bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.black,
+        selectedFontSize: 14.0,
+        unselectedFontSize: 12.0,
+        type: BottomNavigationBarType.fixed,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.update), title: Text("Top Stories")),
+          BottomNavigationBarItem(icon: Icon(Icons.new_releases), title: Text("New Stories")),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+      body: _buildArticleListView(context, _selectedIndex),
     );
   }
 
-  Widget _buildArticleListView(BuildContext context) {
+  Widget _buildArticleListView(BuildContext context, int _selectedIndex) {
+    BlocProvider.of<ArticleBloc>(context)
+      .add(FetchArticles(_selectedIndex));
+    
     return BlocConsumer<ArticleBloc, ArticleState> (
       listener: (BuildContext context, ArticleState state) {
         if(state is ArticlesLoaded) {
@@ -86,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return RefreshIndicator(
             onRefresh: () {
               BlocProvider.of<ArticleBloc>(context)
-                .add(RefreshArticles());
+                .add(RefreshArticles(_selectedIndex));
               return _refreshCompleter.future;
             },
             child: Column(

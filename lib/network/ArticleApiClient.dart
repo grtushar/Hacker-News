@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 class ArticleApiClient {
 	static const baseUrl = "https://hacker-news.firebaseio.com/v0/";
 	
-	Future<List<int>> fetchArticles() async {
-		final url = "${baseUrl}topstories.json";
+	Future<List<int>> fetchArticles(int type) async {
+		final url = type == 0 ? "${baseUrl}topstories.json" : "${baseUrl}newstories.json";
 		final response = await http.get(url);
 		
 		if(response.statusCode != 200) throw Exception('Failed to load article ids!');
