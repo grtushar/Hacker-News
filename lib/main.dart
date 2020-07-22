@@ -83,6 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.update), title: Text("Top Stories")),
           BottomNavigationBarItem(icon: Icon(Icons.new_releases), title: Text("New Stories")),
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark), title: Text("Best Stories")),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

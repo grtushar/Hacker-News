@@ -7,8 +7,12 @@ class ArticleApiClient {
 	static const baseUrl = "https://hacker-news.firebaseio.com/v0/";
 	
 	Future<List<int>> fetchArticles(int type) async {
-		final url = type == 0 ? "${baseUrl}topstories.json" : "${baseUrl}newstories.json";
-		final response = await http.get(url);
+		String _url;
+		if (type == 0) _url = "${baseUrl}topstories.json";
+		else if (type == 1) _url = "${baseUrl}newstories.json";
+		else _url = "${baseUrl}beststories.json";
+		
+		final response = await http.get(_url);
 		
 		if(response.statusCode != 200) throw Exception('Failed to load article ids!');
 		
